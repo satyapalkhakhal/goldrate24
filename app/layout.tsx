@@ -66,18 +66,15 @@ export default function RootLayout({
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2757390342181644"
                     crossOrigin="anonymous"
                 />
-                <script
-                    async
-                    src="https://www.googletagmanager.com/gtag/js?id=G-XBZK7E1G01"
-                />
+                <script async src="https://www.googletagmanager.com/gtag/js?id=G-XBZK7E1G01"></script>
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
-                            window.dataLayer = window.dataLayer || [];
-                            function gtag(){dataLayer.push(arguments);}
-                            gtag('js', new Date());
-                            gtag('config', 'G-XBZK7E1G01');
-                        `,
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-XBZK7E1G01');
+                `,
                     }}
                 />
             </head>
