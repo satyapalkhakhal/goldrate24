@@ -3,8 +3,30 @@ import Link from 'next/link';
 import { MapPin, TrendingUp } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Gold Rates in Indian Cities',
-    description: 'Check today\'s gold rates in major cities across India. City-specific gold prices for 24K, 22K, and 18K gold.',
+    title: 'Gold Rates in 100+ Indian Cities - City Wise Gold Price Today',
+    description: 'Check today\'s gold rates in 100+ major cities across India. City-specific gold prices for 24K, 22K, and 18K gold in Mumbai, Delhi, Bangalore, Chennai, Kolkata, Hyderabad & more. Updated hourly.',
+    keywords: [
+        'gold rates by city',
+        'city wise gold rate',
+        'gold rate in cities',
+        'gold price by city',
+        'gold rate mumbai',
+        'gold rate delhi',
+        'gold rate bangalore',
+        'gold rate chennai',
+        'gold rate kolkata',
+        'gold rate hyderabad',
+        'city gold rates india',
+    ],
+    alternates: {
+        canonical: '/cities',
+    },
+    openGraph: {
+        title: 'Gold Rates in 100+ Indian Cities - City Wise Gold Price',
+        description: 'Check today\'s gold rates in major cities across India. City-specific prices for 24K, 22K, and 18K gold updated hourly.',
+        url: '/cities',
+        type: 'website',
+    },
 };
 
 const cities = [

@@ -56,9 +56,58 @@ export async function generateMetadata({ params }: { params: { city: string } })
         };
     }
 
+    const cityName = city.name;
+    const stateName = city.state;
+    const rate22k = city.rates['22k'].price;
+    const rate24k = city.rates['24k'].price;
+
     return {
-        title: `Gold Rate in ${city.name} Today - ${city.state}`,
-        description: `Check today's live gold rates in ${city.name}, ${city.state}. Get accurate prices for 24K, 22K, and 18K gold updated hourly.`,
+        title: `Gold Rate in ${cityName} Today - ${stateName} | 24K, 22K, 18K Gold Price`,
+        description: `Today's gold rate in ${cityName}, ${stateName}: 24K ₹${rate24k}/gram, 22K ₹${rate22k}/gram. Check live gold prices updated hourly. Free gold calculator with making charges & GST for ${cityName}.`,
+        keywords: [
+            `gold rate in ${cityName.toLowerCase()}`,
+            `gold price in ${cityName.toLowerCase()}`,
+            `${cityName.toLowerCase()} gold rate`,
+            `${cityName.toLowerCase()} gold price`,
+            `gold rate in ${cityName.toLowerCase()} today`,
+            `gold price in ${cityName.toLowerCase()} today`,
+            `22k gold rate in ${cityName.toLowerCase()}`,
+            `24k gold rate in ${cityName.toLowerCase()}`,
+            `18k gold rate in ${cityName.toLowerCase()}`,
+            `gold rate ${cityName.toLowerCase()} ${stateName.toLowerCase()}`,
+            `today gold rate ${cityName.toLowerCase()}`,
+            `${cityName.toLowerCase()} gold rate per gram`,
+            `live gold rate ${cityName.toLowerCase()}`,
+        ],
+        alternates: {
+            canonical: `/cities/${params.city}`,
+        },
+        openGraph: {
+            title: `Gold Rate in ${cityName} Today - ${stateName} | Live Gold Price`,
+            description: `Check today's live gold rates in ${cityName}. 24K: ₹${rate24k}, 22K: ₹${rate22k} per gram. Updated hourly with accurate prices.`,
+            url: `/cities/${params.city}`,
+            type: 'website',
+            locale: 'en_IN',
+            siteName: 'GoldRate24',
+            images: [
+                {
+                    url: '/og-image.png',
+                    width: 1200,
+                    height: 630,
+                    alt: `Gold Rate in ${cityName} Today`,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `Gold Rate in ${cityName} Today - ${rate22k}/gram (22K)`,
+            description: `Live gold prices in ${cityName}: 24K ₹${rate24k}, 22K ₹${rate22k}, 18K ₹${city.rates['18k'].price} per gram.`,
+            images: ['/og-image.png'],
+        },
+        robots: {
+            index: true,
+            follow: true,
+        },
     };
 }
 

@@ -18,27 +18,67 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
     title: {
-        default: 'GoldRate24 - Live Gold Rates & Financial Calculators',
-        template: '%s | GoldRate24'
+        default: 'Gold Rate Today - Live 24K, 22K, 18K Gold Price India | Gold Calculator',
+        template: '%s | GoldRate24 - Live Gold Rates India'
     },
-    description: 'Get real-time gold rates for 24K, 22K, and 18K gold. Access powerful financial calculators for gold investments, home loans, and gold loans. City-specific gold prices across India.',
-    keywords: ['gold rate', 'gold price', 'gold calculator', 'gold rate today', '24k gold', '22k gold', 'gold loan calculator', 'home loan calculator'],
+    description: 'Check today\'s live gold rate in India for 24K, 22K, and 18K gold. Get real-time gold prices in Mumbai, Delhi, Bangalore, Chennai & 100+ cities. Free gold calculator with making charges & GST. Updated hourly.',
+    keywords: [
+        'gold rate today',
+        'gold price today',
+        'gold rate',
+        'gold price',
+        '24k gold rate',
+        '22k gold rate',
+        '18k gold rate',
+        'gold rate in india',
+        'gold price in india',
+        'gold calculator',
+        'gold rate calculator',
+        'gold price calculator',
+        'gold rate mumbai',
+        'gold rate delhi',
+        'gold rate bangalore',
+        'gold rate chennai',
+        'today gold rate',
+        'gold rate per gram',
+        'gold loan calculator',
+        'home loan calculator',
+        'emi calculator',
+        'live gold rate',
+        'gold rate today per gram',
+        '22k gold rate today',
+        '24k gold rate today',
+        'gold making charges calculator'
+    ],
     authors: [{ name: 'GoldRate24' }],
     creator: 'GoldRate24',
     publisher: 'GoldRate24',
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://goldrate24.in'),
+    alternates: {
+        canonical: '/',
+    },
     openGraph: {
         type: 'website',
         locale: 'en_IN',
         url: '/',
         siteName: 'GoldRate24',
-        title: 'GoldRate24 - Live Gold Rates & Financial Calculators',
-        description: 'Get real-time gold rates and powerful financial calculators for gold investments across India.',
+        title: 'Gold Rate Today - Live Gold Price India | 24K, 22K, 18K Gold Rates',
+        description: 'Get real-time gold rates across India. Check today\'s 24K, 22K, 18K gold prices in 100+ cities. Free gold calculator with making charges. Updated every hour.',
+        images: [
+            {
+                url: '/og-image.png',
+                width: 1200,
+                height: 630,
+                alt: 'GoldRate24 - Live Gold Rates India',
+            },
+        ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'GoldRate24 - Live Gold Rates & Financial Calculators',
-        description: 'Get real-time gold rates and powerful financial calculators for gold investments across India.',
+        title: 'Gold Rate Today - Live Gold Price India | GoldRate24',
+        description: 'Check today\'s live gold rates for 24K, 22K, 18K gold across 100+ Indian cities. Free gold calculator with making charges & GST.',
+        images: ['/og-image.png'],
+        creator: '@goldrate24',
     },
     robots: {
         index: true,
@@ -51,6 +91,10 @@ export const metadata: Metadata = {
             'max-snippet': -1,
         },
     },
+    verification: {
+        google: 'your-google-verification-code', // Add your Google Search Console verification code
+    },
+    category: 'Finance',
 };
 
 export default function RootLayout({
@@ -61,6 +105,7 @@ export default function RootLayout({
     return (
         <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
             <head>
+                <meta name="google-adsense-account" content="ca-pub-2757390342181644" />
                 <script
                     async
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2757390342181644"

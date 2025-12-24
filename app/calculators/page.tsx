@@ -3,8 +3,30 @@ import Link from 'next/link';
 import { Calculator, Home, Coins, TrendingUp } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Financial Calculators',
-    description: 'Access powerful financial calculators for gold purchases, home loans, and gold loans. Make informed investment decisions with accurate calculations.',
+    title: 'Free Financial Calculators - Gold, Home Loan & Gold Loan EMI Calculator',
+    description: 'Free online calculators for gold purchase (with making charges & GST), home loan EMI, and gold loan calculations. Accurate, easy-to-use financial tools for smart investment decisions in India.',
+    keywords: [
+        'gold calculator',
+        'gold price calculator',
+        'gold calculator with making charges',
+        'home loan calculator',
+        'home loan emi calculator',
+        'gold loan calculator',
+        'emi calculator',
+        'loan calculator',
+        'financial calculator',
+        'gold purchase calculator',
+        'gold calculator india',
+    ],
+    alternates: {
+        canonical: '/calculators',
+    },
+    openGraph: {
+        title: 'Free Financial Calculators | Gold, Home Loan & Gold Loan',
+        description: 'Calculate gold purchase cost, home loan EMI, and gold loan amount with our free online calculators. Accurate results with detailed breakdowns.',
+        url: '/calculators',
+        type: 'website',
+    },
 };
 
 const calculators = [

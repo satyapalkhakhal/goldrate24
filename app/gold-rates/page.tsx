@@ -4,8 +4,30 @@ import { TrendingUp, MapPin, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'Live Gold Rates Today',
-    description: 'Check today\'s live gold rates for 24K, 22K, and 18K gold. Updated hourly with accurate prices across India.',
+    title: 'Live Gold Rates Today India - 24K, 22K, 18K Gold Price Per Gram',
+    description: 'Check today\'s live gold rates in India for 24K, 22K, and 18K gold. Real-time gold prices updated hourly across 100+ cities including Mumbai, Delhi, Bangalore, Chennai. Accurate gold rate per gram.',
+    keywords: [
+        'live gold rates',
+        'gold rates today',
+        'gold price today india',
+        '24k gold rate today',
+        '22k gold rate today',
+        '18k gold rate today',
+        'gold rate per gram',
+        'today gold rate',
+        'gold price per gram',
+        'current gold rate',
+        'gold rate india',
+    ],
+    alternates: {
+        canonical: '/gold-rates',
+    },
+    openGraph: {
+        title: 'Live Gold Rates Today - 24K, 22K, 18K Gold Price India',
+        description: 'Real-time gold prices for 24K, 22K, and 18K gold across India. Updated hourly with accurate rates in 100+ cities.',
+        url: '/gold-rates',
+        type: 'website',
+    },
 };
 
 const topCities = [
