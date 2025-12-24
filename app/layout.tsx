@@ -66,6 +66,20 @@ export default function RootLayout({
                     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2757390342181644"
                     crossOrigin="anonymous"
                 />
+                <script
+                    async
+                    src="https://www.googletagmanager.com/gtag/js?id=G-XBZK7E1G01"
+                />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            window.dataLayer = window.dataLayer || [];
+                            function gtag(){dataLayer.push(arguments);}
+                            gtag('js', new Date());
+                            gtag('config', 'G-XBZK7E1G01');
+                        `,
+                    }}
+                />
             </head>
             <body className="antialiased">
                 <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-amber-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
