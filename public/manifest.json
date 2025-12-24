@@ -1,0 +1,17 @@
+{
+    "name": "GoldRate24 - Live Gold Rates & Financial Calculators",
+    "short_name": "GoldRate24",
+    "description": "Get real-time gold rates for 24K, 22K, and 18K gold. Access powerful financial calculators.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#F59E0B",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
