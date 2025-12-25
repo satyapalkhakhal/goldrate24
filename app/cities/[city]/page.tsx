@@ -2,119 +2,100 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MapPin, TrendingUp, TrendingDown, Calendar, Info } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
 
-// City data - in production, this would come from a database
-const cityData: Record<string, any> = {
-    mumbai: {
-        name: 'Mumbai',
-        state: 'Maharashtra',
-        rates: {
-            '24k': { price: 6850, change: 45 },
-            '22k': { price: 6520, change: 35 },
-            '18k': { price: 5280, change: 28 },
-        },
-        lastUpdated: new Date().toISOString(),
-    },
-    delhi: {
-        name: 'Delhi',
-        state: 'Delhi',
-        rates: {
-            '24k': { price: 6845, change: 50 },
-            '22k': { price: 6515, change: 40 },
-            '18k': { price: 5275, change: 30 },
-        },
-        lastUpdated: new Date().toISOString(),
-    },
-    bangalore: {
-        name: 'Bangalore',
-        state: 'Karnataka',
-        rates: {
-            '24k': { price: 6855, change: 40 },
-            '22k': { price: 6525, change: 30 },
-            '18k': { price: 5285, change: 25 },
-        },
-        lastUpdated: new Date().toISOString(),
-    },
-    chennai: {
-        name: 'Chennai',
-        state: 'Tamil Nadu',
-        rates: {
-            '24k': { price: 6860, change: 35 },
-            '22k': { price: 6530, change: 25 },
-            '18k': { price: 5290, change: 20 },
-        },
-        lastUpdated: new Date().toISOString(),
-    },
-};
+// Initialize Supabase client
+const supabase = createClient(
+    process.env.SUPABASE_URL || 'https://mrvapygtxktrgilxqgqr.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ydmFweWd0eGt0cmdpbHhxZ3FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyOTcwNDUsImV4cCI6MjA3Njg3MzA0NX0.9PA0JNkMOFVDoK4adMF_eO6eG5BBC4Jvut2sdDSPDM4'
+);
+
+// Fetch city data from Supabase
+async function getCityData(citySlug: string) {
+    try {
+        // Convert slug to city name (capitalize first letter)
+        const cityName = citySlug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+        const { data, error } = await supabase
+            .from('gold_rates')
+            .select('*')
+            .eq('city', cityName)
+            .single();
+
+        if (error || !data) {
+            return null;
+        }
+
+        // Format data to match expected structure
+        return {
+            city: data.city,
+            state: data.state,
+            rates: [
+                {
+                    purity: '24K Gold',
+                    price: Math.round(data.gold24k_10g / 10),
+                    change: 0,
+                },
+                {
+                    purity: '22K Gold',
+                    price: Math.round(data.gold22k_10g / 10),
+                    change: 0,
+                },
+                {
+                    purity: '18K Gold',
+                    price: Math.round(data.gold18k_10g / 10),
+                    change: 0,
+                },
+            ],
+            silver: {
+                price_10g: data.silver_10g,
+                price_1kg: data.silver_1kg,
+            },
+            lastUpdated: data.api_last_updated,
+        };
+    } catch (error) {
+        console.error('Error fetching city data:', error);
+        return null;
+    }
+}
 
 export async function generateMetadata({ params }: { params: { city: string } }): Promise<Metadata> {
-    const city = cityData[params.city];
+    const cityData = await getCityData(params.city);
 
-    if (!city) {
+    if (!cityData) {
         return {
             title: 'City Not Found',
         };
     }
 
-    const cityName = city.name;
-    const stateName = city.state;
-    const rate22k = city.rates['22k'].price;
-    const rate24k = city.rates['24k'].price;
+    const cityName = cityData.city;
+    const stateName = cityData.state;
+    const rate24k = cityData.rates[0].price;
+    const rate22k = cityData.rates[1].price;
 
     return {
         title: `Gold Rate in ${cityName} Today - ${stateName} | 24K, 22K, 18K Gold Price`,
-        description: `Today's gold rate in ${cityName}, ${stateName}: 24K ₹${rate24k}/gram, 22K ₹${rate22k}/gram. Check live gold prices updated hourly. Free gold calculator with making charges & GST for ${cityName}.`,
+        description: `Today's gold rate in ${cityName}, ${stateName}: 24K ₹${rate24k}/gram, 22K ₹${rate22k}/gram. Check live gold prices updated hourly.`,
         keywords: [
             `gold rate in ${cityName.toLowerCase()}`,
             `gold price in ${cityName.toLowerCase()}`,
-            `${cityName.toLowerCase()} gold rate`,
-            `${cityName.toLowerCase()} gold price`,
-            `gold rate in ${cityName.toLowerCase()} today`,
-            `gold price in ${cityName.toLowerCase()} today`,
-            `22k gold rate in ${cityName.toLowerCase()}`,
-            `24k gold rate in ${cityName.toLowerCase()}`,
-            `18k gold rate in ${cityName.toLowerCase()}`,
-            `gold rate ${cityName.toLowerCase()} ${stateName.toLowerCase()}`,
-            `today gold rate ${cityName.toLowerCase()}`,
-            `${cityName.toLowerCase()} gold rate per gram`,
-            `live gold rate ${cityName.toLowerCase()}`,
+            `${cityName.toLowerCase()} gold rate today`,
+            `24k gold rate ${cityName.toLowerCase()}`,
+            `22k gold rate ${cityName.toLowerCase()}`,
         ],
         alternates: {
             canonical: `/cities/${params.city}`,
         },
-        openGraph: {
-            title: `Gold Rate in ${cityName} Today - ${stateName} | Live Gold Price`,
-            description: `Check today's live gold rates in ${cityName}. 24K: ₹${rate24k}, 22K: ₹${rate22k} per gram. Updated hourly with accurate prices.`,
-            url: `/cities/${params.city}`,
-            type: 'website',
-            locale: 'en_IN',
-            siteName: 'GoldRate24',
-            images: [
-                {
-                    url: '/og-image.png',
-                    width: 1200,
-                    height: 630,
-                    alt: `Gold Rate in ${cityName} Today`,
-                },
-            ],
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: `Gold Rate in ${cityName} Today - ${rate22k}/gram (22K)`,
-            description: `Live gold prices in ${cityName}: 24K ₹${rate24k}, 22K ₹${rate22k}, 18K ₹${city.rates['18k'].price} per gram.`,
-            images: ['/og-image.png'],
-        },
-        robots: {
-            index: true,
-            follow: true,
-        },
     };
 }
 
-export default function CityPage({ params }: { params: { city: string } }) {
-    const city = cityData[params.city];
+export default async function CityPage({ params }: { params: { city: string } }) {
+    const cityData = await getCityData(params.city);
 
-    if (!city) {
+    if (!cityData) {
         notFound();
     }
 
@@ -130,7 +111,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
                             <span>/</span>
                             <Link href="/cities" className="hover:text-primary transition-colors">Cities</Link>
                             <span>/</span>
-                            <span className="text-text-primary">{city.name}</span>
+                            <span className="text-text-primary">{cityData.city}</span>
                         </div>
 
                         <div className="flex items-center gap-4 mb-6">
@@ -139,10 +120,10 @@ export default function CityPage({ params }: { params: { city: string } }) {
                             </div>
                             <div>
                                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-                                    Gold Rate in <span className="text-gradient-gold">{city.name}</span>
+                                    Gold Rate in <span className="text-gradient-gold">{cityData.city}</span>
                                 </h1>
                                 <p className="text-lg text-text-secondary mt-2">
-                                    {city.state} • Updated hourly
+                                    {cityData.state} • Updated hourly
                                 </p>
                             </div>
                         </div>
@@ -155,28 +136,29 @@ export default function CityPage({ params }: { params: { city: string } }) {
                 <div className="container-custom">
                     <div className="max-w-4xl mx-auto">
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
-                            {Object.entries(city.rates).map(([purity, data]: [string, any]) => {
-                                const isPositive = data.change >= 0;
+                            {cityData.rates.map((rate) => {
+                                const isPositive = rate.change >= 0;
                                 return (
-                                    <div key={purity} className="card-hover p-6">
+                                    <div key={rate.purity} className="card-hover p-6">
                                         <div className="flex items-center justify-between mb-4">
-                                            <span className="badge-gold text-lg font-bold uppercase">
-                                                {purity} Gold
+                                            <span className="badge-gold text-lg font-bold">
+                                                {rate.purity}
                                             </span>
-                                            <div className={`flex items-center gap-1 text-sm font-semibold ${isPositive ? 'text-success' : 'text-error'
-                                                }`}>
-                                                {isPositive ? (
-                                                    <TrendingUp className="w-4 h-4" />
-                                                ) : (
-                                                    <TrendingDown className="w-4 h-4" />
-                                                )}
-                                                <span>{isPositive ? '+' : ''}₹{data.change}</span>
-                                            </div>
+                                            {rate.change !== 0 && (
+                                                <div className={`flex items-center gap-1 text-sm font-semibold ${isPositive ? 'text-success' : 'text-error'}`}>
+                                                    {isPositive ? (
+                                                        <TrendingUp className="w-4 h-4" />
+                                                    ) : (
+                                                        <TrendingDown className="w-4 h-4" />
+                                                    )}
+                                                    <span>{isPositive ? '+' : ''}₹{rate.change}</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="mb-2">
                                             <div className="text-3xl md:text-4xl font-bold text-gradient-gold">
-                                                ₹{data.price.toLocaleString('en-IN')}
+                                                ₹{rate.price.toLocaleString('en-IN')}
                                             </div>
                                             <div className="text-sm text-text-tertiary">
                                                 per gram
@@ -186,7 +168,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
                                         <div className="mt-4 pt-4 border-t border-border">
                                             <div className="text-xs text-text-tertiary">
                                                 10 grams: <span className="font-semibold text-text-primary">
-                                                    ₹{(data.price * 10).toLocaleString('en-IN')}
+                                                    ₹{(rate.price * 10).toLocaleString('en-IN')}
                                                 </span>
                                             </div>
                                         </div>
@@ -198,8 +180,29 @@ export default function CityPage({ params }: { params: { city: string } }) {
                         {/* Last Updated */}
                         <div className="flex items-center justify-center gap-2 text-sm text-text-secondary mb-8">
                             <Calendar className="w-4 h-4" />
-                            <span>Last updated: {new Date(city.lastUpdated).toLocaleString('en-IN')}</span>
+                            <span>Last updated: {new Date(cityData.lastUpdated).toLocaleString('en-IN')}</span>
                         </div>
+
+                        {/* Silver Rates */}
+                        {cityData.silver && (
+                            <div className="card p-6 mb-8">
+                                <h3 className="text-xl font-bold mb-4">Silver Rates in {cityData.city}</h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <div className="text-sm text-text-secondary">10 grams</div>
+                                        <div className="text-2xl font-bold text-gray-600">
+                                            ₹{cityData.silver.price_10g.toLocaleString('en-IN')}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm text-text-secondary">1 kilogram</div>
+                                        <div className="text-2xl font-bold text-gray-600">
+                                            ₹{cityData.silver.price_1kg.toLocaleString('en-IN')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Calculator CTA */}
                         <div className="card p-8 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800 mb-8">
@@ -226,9 +229,9 @@ export default function CityPage({ params }: { params: { city: string } }) {
                                         <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold mb-2">About Gold Rates in {city.name}</h3>
+                                        <h3 className="font-bold mb-2">About Gold Rates in {cityData.city}</h3>
                                         <p className="text-sm text-text-secondary">
-                                            Gold rates in {city.name} are influenced by international gold prices,
+                                            Gold rates in {cityData.city} are influenced by international gold prices,
                                             currency exchange rates, and local demand. Prices may vary slightly between
                                             different jewelers based on making charges and purity.
                                         </p>
@@ -263,30 +266,65 @@ export default function CityPage({ params }: { params: { city: string } }) {
                     <div className="max-w-4xl mx-auto">
                         <h2 className="text-2xl font-bold mb-6">Gold Rates in Other Cities</h2>
                         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            {Object.entries(cityData)
-                                .filter(([slug]) => slug !== params.city)
-                                .slice(0, 6)
-                                .map(([slug, data]) => (
-                                    <Link
-                                        key={slug}
-                                        href={`/cities/${slug}`}
-                                        className="card-hover p-4 group"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <div className="font-semibold group-hover:text-primary transition-colors">
-                                                    {data.name}
-                                                </div>
-                                                <div className="text-sm text-text-tertiary">
-                                                    ₹{data.rates['22k'].price.toLocaleString('en-IN')}
-                                                </div>
-                                            </div>
-                                            <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">
-                                                →
-                                            </span>
-                                        </div>
-                                    </Link>
-                                ))}
+                            <Link href="/cities/mumbai" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Mumbai</div>
+                                        <div className="text-sm text-text-tertiary">Maharashtra</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                            <Link href="/cities/delhi" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Delhi</div>
+                                        <div className="text-sm text-text-tertiary">Delhi</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                            <Link href="/cities/bangalore" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Bangalore</div>
+                                        <div className="text-sm text-text-tertiary">Karnataka</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                            <Link href="/cities/chennai" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Chennai</div>
+                                        <div className="text-sm text-text-tertiary">Tamil Nadu</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                            <Link href="/cities/kolkata" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Kolkata</div>
+                                        <div className="text-sm text-text-tertiary">West Bengal</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                            <Link href="/cities/hyderabad" className="card-hover p-4 group">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-semibold group-hover:text-primary transition-colors">Hyderabad</div>
+                                        <div className="text-sm text-text-tertiary">Telangana</div>
+                                    </div>
+                                    <span className="text-text-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all">→</span>
+                                </div>
+                            </Link>
+                        </div>
+                        <div className="text-center mt-6">
+                            <Link href="/cities" className="btn-outline">
+                                View All Cities
+                            </Link>
                         </div>
                     </div>
                 </div>
