@@ -3,6 +3,7 @@ import GoldRatesDashboard from '@/components/home/GoldRatesDashboard';
 import QuickCalculator from '@/components/home/QuickCalculator';
 import Features from '@/components/home/Features';
 import CityRates from '@/components/home/CityRates';
+import BusinessNews from '@/components/home/BusinessNews';
 import TrustIndicators from '@/components/home/TrustIndicators';
 import StructuredData from '@/components/seo/StructuredData';
 
@@ -31,6 +32,7 @@ export default function HomePage() {
             <QuickCalculator />
             <Features />
             <CityRates />
+            <BusinessNews />
             <TrustIndicators />
         </>
     );

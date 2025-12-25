@@ -2,7 +2,13 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['api.example.com'], // Add your API domain if serving images
+        domains: [
+            'api.example.com',
+            'images.news18.com',
+            'img.etimg.com',
+            'static.toiimg.com',
+            'images.hindustantimes.com',
+        ],
         formats: ['image/avif', 'image/webp'],
     },
     // Enable experimental features for better performance
