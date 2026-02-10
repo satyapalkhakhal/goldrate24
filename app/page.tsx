@@ -1,5 +1,5 @@
-import Hero from '@/components/home/Hero';
 import GoldRatesDashboard from '@/components/home/GoldRatesDashboard';
+import GoldRateHistory from '@/components/home/GoldRateHistory';
 import QuickCalculator from '@/components/home/QuickCalculator';
 import Features from '@/components/home/Features';
 import CityRates from '@/components/home/CityRates';
@@ -27,8 +27,8 @@ export default function HomePage() {
                     logo: 'https://goldrate24.in/icon.png',
                 }}
             />
-            <Hero />
             <GoldRatesDashboard />
+            <GoldRateHistory />
             <QuickCalculator />
             <Features />
             <CityRates />

@@ -8,6 +8,7 @@ const nextConfig = {
             'img.etimg.com',
             'static.toiimg.com',
             'images.hindustantimes.com',
+            'mrvapygtxktrgilxqgqr.supabase.co',
         ],
         formats: ['image/avif', 'image/webp'],
     },

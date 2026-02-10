@@ -1,11 +1,40 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useGoldRates } from '@/hooks/useGoldRates';
-import { TrendingUp, TrendingDown, RefreshCw, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, Clock, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+const CITIES = [
+    'Delhi',
+    'Chennai',
+    'Mumbai',
+    'Pune',
+    'Hyderabad',
+    'Bangalore',
+    'Coimbatore',
+    'Kolkata',
+    'Ahmedabad',
+    'Kerala',
+];
+
 export default function GoldRatesDashboard() {
-    const { rates, isLoading, error, lastUpdated, refresh } = useGoldRates();
+    const [selectedCity, setSelectedCity] = useState<string>('Mumbai');
+    const { rates, city, isLoading, error, lastUpdated, refresh } = useGoldRates(selectedCity);
+
+    // Load saved city from localStorage on mount
+    useEffect(() => {
+        const savedCity = localStorage.getItem('selectedCity');
+        if (savedCity && CITIES.includes(savedCity)) {
+            setSelectedCity(savedCity);
+        }
+    }, []);
+
+    // Save selected city to localStorage
+    const handleCityChange = (newCity: string) => {
+        setSelectedCity(newCity);
+        localStorage.setItem('selectedCity', newCity);
+    };
 
     if (error) {
         return (
@@ -23,36 +52,55 @@ export default function GoldRatesDashboard() {
         <section className="section bg-gradient-to-b from-background to-surface">
             <div className="container-custom">
                 {/* Section Header */}
-                <div className="text-center mb-12">
-                    <h2 className="section-title">Live Gold Rates</h2>
+                <div className="text-center mb-8">
+                    <h1 className="section-title">Live Gold Rates in {city}</h1>
                     <p className="section-subtitle">
                         Real-time gold prices updated hourly for accurate investment decisions
                     </p>
                 </div>
 
-                {/* Last Updated & Refresh */}
+                {/* City Selector & Controls */}
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                    <div className="flex items-center gap-2 text-sm text-text-secondary">
-                        <Clock className="w-4 h-4" />
-                        <span>
-                            Last updated: {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'Loading...'}
-                        </span>
+                    {/* City Selector */}
+                    <div className="flex items-center gap-3">
+                        <MapPin className="w-5 h-5 text-amber-600" />
+                        <select
+                            value={selectedCity}
+                            onChange={(e) => handleCityChange(e.target.value)}
+                            className="px-4 py-2.5 rounded-lg border border-border bg-surface text-text-primary font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer hover:border-amber-400"
+                        >
+                            {CITIES.map((cityName) => (
+                                <option key={cityName} value={cityName}>
+                                    {cityName}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    <button
-                        onClick={refresh}
-                        disabled={isLoading}
-                        className="btn-secondary text-sm py-2 px-4"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </button>
+
+                    {/* Last Updated & Refresh */}
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-sm text-text-secondary">
+                            <Clock className="w-4 h-4" />
+                            <span>
+                                Last updated: {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'Loading...'}
+                            </span>
+                        </div>
+                        <button
+                            onClick={refresh}
+                            disabled={isLoading}
+                            className="btn-secondary text-sm py-2 px-4"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </button>
+                    </div>
                 </div>
 
                 {/* Gold Rates Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {rates.map((rate) => {
                         const isPositive = rate.change >= 0;
-                        const changePercent = ((rate.change / rate.price) * 100).toFixed(2);
+                        const changePercent = rate.changePercent || ((rate.change / rate.price) * 100).toFixed(2) + '%';
 
                         return (
                             <div
@@ -71,7 +119,7 @@ export default function GoldRatesDashboard() {
                                         ) : (
                                             <TrendingDown className="w-4 h-4" />
                                         )}
-                                        <span>{changePercent}%</span>
+                                        <span>{changePercent}</span>
                                     </div>
                                 </div>
 
