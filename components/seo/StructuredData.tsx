@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface StructuredDataProps {
-    type: 'website' | 'localBusiness' | 'breadcrumb' | 'faq' | 'product';
+    type: 'website' | 'localBusiness' | 'breadcrumb' | 'faq' | 'product' | 'custom';
     data: any;
 }
 
@@ -90,6 +90,11 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
                     offerCount: data.offerCount || 1,
                 },
             };
+            break;
+
+        case 'custom':
+            // For custom structured data, use the data as-is
+            schema = data;
             break;
     }
 
