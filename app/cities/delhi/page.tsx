@@ -34,6 +34,7 @@ export const metadata: Metadata = {
         title: `Gold Rate in ${CITY_NAME} Today | Live Gold Prices`,
         description: `Live gold prices in ${CITY_NAME}: 24K, 22K, and 18K gold rates. Updated every 12 hours.`,
         type: 'website',
+        siteName: 'GoldRate24',
         url: `/cities/${CITY_SLUG}`,
     },
     twitter: {
@@ -85,6 +86,7 @@ export default function DelhiPage() {
                 ],
             },
         ],
+    robots: { index: true, follow: true },
     };
 
     return (

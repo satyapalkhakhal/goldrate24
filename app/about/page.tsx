@@ -2,8 +2,30 @@ import type { Metadata } from 'next';
 import { Shield, Target, Users, Award } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'About Us',
-    description: 'Learn about GoldRate24 - your trusted source for real-time gold rates and financial calculators across India.',
+    title: 'About GoldRate24 - Your Trusted Gold Rate Source in India',
+    description: 'Learn about GoldRate24 - your trusted source for real-time gold rates and financial calculators across India. Accurate prices for 24K, 22K, 18K gold.',
+    keywords: [
+        'about goldrate24',
+        'gold rate india website',
+        'gold price tracker',
+        'goldrate24 team',
+    ],
+    openGraph: {
+        title: 'About GoldRate24 - Trusted Gold Rate Source',
+        description: 'GoldRate24 provides real-time gold rates and financial calculators for India. Learn about our mission and values.',
+        type: 'website',
+        url: '/about',
+        siteName: 'GoldRate24',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'About GoldRate24',
+        description: 'Your trusted source for real-time gold rates and financial calculators across India.',
+    },
+    alternates: {
+        canonical: '/about',
+    },
+    robots: { index: true, follow: true },
 };
 
 const values = [
@@ -60,16 +82,16 @@ export default function AboutPage() {
 
                             <div className="grid md:grid-cols-3 gap-6 mt-12">
                                 <div className="text-center">
-                                    <div className="text-4xl font-bold text-gradient-gold mb-2">50K+</div>
-                                    <div className="text-sm text-text-secondary">Daily Active Users</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-gradient-gold mb-2">100+</div>
+                                    <div className="text-4xl font-bold text-gradient-gold mb-2">10+</div>
                                     <div className="text-sm text-text-secondary">Cities Covered</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-4xl font-bold text-gradient-gold mb-2">1M+</div>
-                                    <div className="text-sm text-text-secondary">Calculations Done</div>
+                                    <div className="text-4xl font-bold text-gradient-gold mb-2">15+</div>
+                                    <div className="text-sm text-text-secondary">Financial Calculators</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-4xl font-bold text-gradient-gold mb-2">3</div>
+                                    <div className="text-sm text-text-secondary">Gold Purities Tracked</div>
                                 </div>
                             </div>
                         </div>
@@ -126,8 +148,8 @@ export default function AboutPage() {
                                     but also offers powerful calculators for informed decision-making.
                                 </p>
                                 <p className="text-text-secondary">
-                                    Today, we serve over 50,000 users daily across 100+ cities in India, helping
-                                    them make smarter investment decisions with confidence.
+                                    Today, we cover 10+ major Indian cities and offer 15+ financial calculators,
+                                    helping users make smarter investment decisions with confidence.
                                 </p>
                             </div>
                         </div>

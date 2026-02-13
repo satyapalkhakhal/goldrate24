@@ -1,8 +1,24 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Terms of Service',
-    description: 'Terms of Service for GoldRate24 - Read our terms and conditions for using our website and services.',
+    title: 'Terms of Service - GoldRate24',
+    description: 'Terms of Service for GoldRate24 - Read our terms and conditions for using our gold rate tracking website and financial calculator services.',
+    openGraph: {
+        title: 'Terms of Service - GoldRate24',
+        description: 'Read the terms and conditions for using GoldRate24 website and services.',
+        type: 'website',
+        url: '/terms',
+        siteName: 'GoldRate24',
+    },
+    twitter: {
+        card: 'summary',
+        title: 'Terms of Service - GoldRate24',
+        description: 'Terms and conditions for using GoldRate24 gold rate tracking and calculator services.',
+    },
+    alternates: {
+        canonical: '/terms',
+    },
+    robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {

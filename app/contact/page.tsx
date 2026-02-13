@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import type { Metadata } from 'next';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 
 export default function ContactPage() {

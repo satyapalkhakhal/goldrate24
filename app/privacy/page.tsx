@@ -1,8 +1,24 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy',
-    description: 'Privacy Policy for GoldRate24 - Learn how we collect, use, and protect your personal information.',
+    title: 'Privacy Policy - GoldRate24',
+    description: 'Privacy Policy for GoldRate24 - Learn how we collect, use, and protect your personal information when you use our gold rate and financial calculator services.',
+    openGraph: {
+        title: 'Privacy Policy - GoldRate24',
+        description: 'Learn how GoldRate24 collects, uses, and protects your personal information.',
+        type: 'website',
+        url: '/privacy',
+        siteName: 'GoldRate24',
+    },
+    twitter: {
+        card: 'summary',
+        title: 'Privacy Policy - GoldRate24',
+        description: 'Learn how GoldRate24 handles your data and protects your privacy.',
+    },
+    alternates: {
+        canonical: '/privacy',
+    },
+    robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {

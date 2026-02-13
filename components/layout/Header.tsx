@@ -7,8 +7,10 @@ import { Menu, X, TrendingUp } from 'lucide-react';
 const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Gold Rates', href: '/gold-rates' },
+    { name: 'Silver Rates', href: '/silver-rates' },
     { name: 'Calculators', href: '/calculators' },
     { name: 'Cities', href: '/cities' },
+    { name: 'Blog', href: '/blog' },
     { name: 'About', href: '/about' },
 ];
 
@@ -27,8 +29,8 @@ export default function Header() {
     return (
         <header
             className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-                    ? 'glass shadow-lg'
-                    : 'bg-transparent'
+                ? 'glass shadow-lg'
+                : 'bg-transparent'
                 }`}
         >
             <nav className="container-custom">

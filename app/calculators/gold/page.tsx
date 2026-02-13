@@ -1,304 +1,62 @@
-'use client';
+import { Metadata } from 'next';
+import GoldCalculatorClient from '@/components/calculators/GoldCalculatorClient';
 
-import { useState } from 'react';
-import type { Metadata } from 'next';
-import { Calculator, Download, Share2, RotateCcw } from 'lucide-react';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goldrate24.in';
+
+export const metadata: Metadata = {
+    title: 'Gold Calculator Online - Calculate Gold Purchase Price with Making Charges & GST | GoldRate24',
+    description: 'Free Gold Calculator to calculate the exact cost of gold purchase including weight, purity, making charges, GST, and discounts. Get accurate gold price calculation with detailed breakdown for 24K, 22K, 18K gold.',
+    keywords: [
+        'gold calculator', 'gold price calculator', 'gold calculator india', 'gold rate calculator',
+        'gold purchase calculator', 'gold making charges calculator', 'gold weight calculator',
+        'gold value calculator', '22k gold calculator', '24k gold calculator', 'gold gst calculator',
+        'gold jewellery price calculator', 'gold cost calculator online', 'gold purity calculator',
+    ].join(', '),
+    openGraph: {
+        title: 'Gold Calculator - Calculate Gold Purchase Price | GoldRate24',
+        description: 'Calculate the total cost of gold purchase with making charges, GST, and discounts. Free online gold calculator.',
+        type: 'website',
+        url: `${baseUrl}/calculators/gold`,
+        siteName: 'GoldRate24',
+    },
+    alternates: { canonical: `${baseUrl}/calculators/gold` },
+    robots: { index: true, follow: true },
+};
 
 export default function GoldCalculatorPage() {
-    const [weight, setWeight] = useState('10');
-    const [purity, setPurity] = useState('22');
-    const [rate, setRate] = useState('6520');
-    const [makingCharges, setMakingCharges] = useState('10');
-    const [makingChargesType, setMakingChargesType] = useState<'percentage' | 'fixed'>('percentage');
-    const [gst, setGst] = useState('3');
-    const [discount, setDiscount] = useState('0');
-
-    const calculateTotal = () => {
-        const w = parseFloat(weight) || 0;
-        const r = parseFloat(rate) || 0;
-        const mc = parseFloat(makingCharges) || 0;
-        const g = parseFloat(gst) || 0;
-        const d = parseFloat(discount) || 0;
-
-        const goldValue = w * r;
-        const makingChargesAmount = makingChargesType === 'percentage'
-            ? (goldValue * mc) / 100
-            : mc;
-        const subtotal = goldValue + makingChargesAmount;
-        const discountAmount = (subtotal * d) / 100;
-        const afterDiscount = subtotal - discountAmount;
-        const gstAmount = (afterDiscount * g) / 100;
-        const total = afterDiscount + gstAmount;
-
-        return {
-            goldValue,
-            makingChargesAmount,
-            subtotal,
-            discountAmount,
-            afterDiscount,
-            gstAmount,
-            total,
-            pricePerGram: total / w,
-        };
-    };
-
-    const result = calculateTotal();
-
-    const handleReset = () => {
-        setWeight('10');
-        setPurity('22');
-        setRate('6520');
-        setMakingCharges('10');
-        setMakingChargesType('percentage');
-        setGst('3');
-        setDiscount('0');
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'WebApplication',
+                name: 'Gold Calculator',
+                description: 'Calculate the total cost of gold purchase including weight, purity, making charges, GST, and discounts.',
+                applicationCategory: 'FinanceApplication',
+                offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+                    { '@type': 'ListItem', position: 2, name: 'Calculators', item: `${baseUrl}/calculators` },
+                    { '@type': 'ListItem', position: 3, name: 'Gold Calculator', item: `${baseUrl}/calculators/gold` },
+                ],
+            },
+            {
+                '@type': 'FAQPage',
+                mainEntity: [
+                    { '@type': 'Question', name: 'How are gold making charges calculated?', acceptedAnswer: { '@type': 'Answer', text: 'Making charges are typically 6-25% of the gold value depending on design complexity. They can be percentage-based or a fixed amount per gram.' } },
+                    { '@type': 'Question', name: 'What is the GST on gold in India?', acceptedAnswer: { '@type': 'Answer', text: 'GST on gold in India is 3% on the value of gold plus making charges. This is a standard rate applicable across all states.' } },
+                    { '@type': 'Question', name: 'What is the difference between 22K and 24K gold?', acceptedAnswer: { '@type': 'Answer', text: '24K gold is 99.9% pure gold, while 22K gold is 91.6% pure with 8.4% other metals mixed for durability. 22K is commonly used for jewellery while 24K is used for coins and bars.' } },
+                ],
+            },
+        ],
     };
 
     return (
-        <div className="min-h-screen">
-            {/* Hero Section */}
-            <section className="section bg-gradient-to-b from-background to-surface">
-                <div className="container-custom">
-                    <div className="max-w-3xl mx-auto text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 border border-amber-300 dark:border-amber-700 mb-6">
-                            <Calculator className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                            <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                                Advanced Gold Calculator
-                            </span>
-                        </div>
-
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                            <span className="text-gradient-gold">Gold Purchase</span> Calculator
-                        </h1>
-
-                        <p className="text-lg text-text-secondary">
-                            Calculate the exact cost of your gold purchase with detailed breakdown
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            {/* Calculator Section */}
-            <section className="section">
-                <div className="container-custom">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="grid lg:grid-cols-5 gap-8">
-                            {/* Input Form */}
-                            <div className="lg:col-span-3 card p-6 md:p-8">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-bold">Enter Details</h2>
-                                    <button
-                                        onClick={handleReset}
-                                        className="btn-secondary text-sm py-2 px-4"
-                                    >
-                                        <RotateCcw className="w-4 h-4" />
-                                        Reset
-                                    </button>
-                                </div>
-
-                                <div className="space-y-6">
-                                    {/* Weight */}
-                                    <div className="input-group">
-                                        <label htmlFor="weight" className="input-label">
-                                            Weight (grams)
-                                        </label>
-                                        <input
-                                            id="weight"
-                                            type="number"
-                                            value={weight}
-                                            onChange={(e) => setWeight(e.target.value)}
-                                            className="input"
-                                            placeholder="Enter weight"
-                                            min="0"
-                                            step="0.001"
-                                        />
-                                    </div>
-
-                                    {/* Purity */}
-                                    <div className="input-group">
-                                        <label htmlFor="purity" className="input-label">
-                                            Gold Purity
-                                        </label>
-                                        <select
-                                            id="purity"
-                                            value={purity}
-                                            onChange={(e) => setPurity(e.target.value)}
-                                            className="input"
-                                        >
-                                            <option value="24">24K (99.9% pure)</option>
-                                            <option value="22">22K (91.6% pure)</option>
-                                            <option value="18">18K (75% pure)</option>
-                                            <option value="14">14K (58.5% pure)</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Rate */}
-                                    <div className="input-group">
-                                        <label htmlFor="rate" className="input-label">
-                                            Gold Rate (₹ per gram)
-                                        </label>
-                                        <input
-                                            id="rate"
-                                            type="number"
-                                            value={rate}
-                                            onChange={(e) => setRate(e.target.value)}
-                                            className="input"
-                                            placeholder="Enter rate per gram"
-                                            min="0"
-                                            step="1"
-                                        />
-                                        <p className="text-xs text-text-tertiary mt-1">
-                                            Current {purity}K gold rate
-                                        </p>
-                                    </div>
-
-                                    {/* Making Charges */}
-                                    <div className="input-group">
-                                        <label htmlFor="makingCharges" className="input-label">
-                                            Making Charges
-                                        </label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                id="makingCharges"
-                                                type="number"
-                                                value={makingCharges}
-                                                onChange={(e) => setMakingCharges(e.target.value)}
-                                                className="input flex-1"
-                                                placeholder="Enter making charges"
-                                                min="0"
-                                                step="0.1"
-                                            />
-                                            <select
-                                                value={makingChargesType}
-                                                onChange={(e) => setMakingChargesType(e.target.value as 'percentage' | 'fixed')}
-                                                className="input w-32"
-                                            >
-                                                <option value="percentage">%</option>
-                                                <option value="fixed">₹</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {/* Discount */}
-                                    <div className="input-group">
-                                        <label htmlFor="discount" className="input-label">
-                                            Discount (%)
-                                        </label>
-                                        <input
-                                            id="discount"
-                                            type="number"
-                                            value={discount}
-                                            onChange={(e) => setDiscount(e.target.value)}
-                                            className="input"
-                                            placeholder="Enter discount percentage"
-                                            min="0"
-                                            max="100"
-                                            step="0.1"
-                                        />
-                                    </div>
-
-                                    {/* GST */}
-                                    <div className="input-group">
-                                        <label htmlFor="gst" className="input-label">
-                                            GST (%)
-                                        </label>
-                                        <input
-                                            id="gst"
-                                            type="number"
-                                            value={gst}
-                                            onChange={(e) => setGst(e.target.value)}
-                                            className="input"
-                                            placeholder="Enter GST percentage"
-                                            min="0"
-                                            step="0.1"
-                                        />
-                                        <p className="text-xs text-text-tertiary mt-1">
-                                            Standard GST on gold is 3%
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Results */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Summary Card */}
-                                <div className="card-gold p-6">
-                                    <h3 className="text-xl font-bold mb-6">Calculation Summary</h3>
-
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200 dark:border-amber-800">
-                                            <span className="text-sm text-text-secondary">Gold Value</span>
-                                            <span className="font-semibold">
-                                                ₹{result.goldValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200 dark:border-amber-800">
-                                            <span className="text-sm text-text-secondary">Making Charges</span>
-                                            <span className="font-semibold">
-                                                ₹{result.makingChargesAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-
-                                        {parseFloat(discount) > 0 && (
-                                            <div className="flex justify-between items-center pb-3 border-b border-amber-200 dark:border-amber-800">
-                                                <span className="text-sm text-text-secondary">Discount</span>
-                                                <span className="font-semibold text-success">
-                                                    -₹{result.discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-between items-center pb-3 border-b border-amber-200 dark:border-amber-800">
-                                            <span className="text-sm text-text-secondary">GST ({gst}%)</span>
-                                            <span className="font-semibold">
-                                                ₹{result.gstAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center pt-4">
-                                            <span className="text-lg font-bold">Total Amount</span>
-                                            <span className="text-2xl font-bold text-gradient-gold">
-                                                ₹{result.total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex justify-between items-center text-sm pt-2 border-t border-amber-200 dark:border-amber-800">
-                                            <span className="text-text-tertiary">Price per gram</span>
-                                            <span className="font-medium">
-                                                ₹{result.pricePerGram.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-3">
-                                    <button className="btn-secondary flex-1 text-sm">
-                                        <Share2 className="w-4 h-4" />
-                                        Share
-                                    </button>
-                                    <button className="btn-secondary flex-1 text-sm">
-                                        <Download className="w-4 h-4" />
-                                        Download
-                                    </button>
-                                </div>
-
-                                {/* Info Card */}
-                                <div className="card p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                                    <h4 className="font-semibold text-sm mb-2 text-blue-900 dark:text-blue-200">
-                                        💡 Did you know?
-                                    </h4>
-                                    <p className="text-xs text-blue-800 dark:text-blue-300">
-                                        Making charges typically range from 6% to 25% depending on the design complexity.
-                                        Always ask for a detailed invoice showing all charges separately.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+            <GoldCalculatorClient />
+        </>
     );
 }

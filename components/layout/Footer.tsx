@@ -4,6 +4,7 @@ import { TrendingUp, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin
 const footerLinks = {
     product: [
         { name: 'Gold Rates', href: '/gold-rates' },
+        { name: 'Silver Rates', href: '/silver-rates' },
         { name: 'Gold Calculator', href: '/calculators/gold' },
         { name: 'Home Loan Calculator', href: '/calculators/home-loan' },
         { name: 'Gold Loan Calculator', href: '/calculators/gold-loan' },
@@ -16,6 +17,7 @@ const footerLinks = {
     ],
     company: [
         { name: 'About Us', href: '/about' },
+        { name: 'Blog', href: '/blog' },
         { name: 'Contact', href: '/contact' },
         { name: 'Privacy Policy', href: '/privacy' },
         { name: 'Terms of Service', href: '/terms' },

@@ -1,4 +1,6 @@
 import { MetadataRoute } from 'next';
+import { CALCULATORS } from '@/lib/calculatorData';
+import { BLOG_POSTS } from '@/lib/blogData';
 
 // Define the cities we support
 const CITIES = [
@@ -38,27 +40,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.9,
         },
         {
-            url: `${baseUrl}/calculators/gold`,
+            url: `${baseUrl}/cities`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/blog`,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/calculators/home-loan`,
+            url: `${baseUrl}/silver-rates`,
             lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/calculators/gold-loan`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/cities`,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
+            changeFrequency: 'hourly',
             priority: 0.8,
         },
         {
@@ -87,6 +83,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ];
 
+    // Dynamic calculator pages from registry
+    const calculatorPages: MetadataRoute.Sitemap = CALCULATORS.map((calc) => ({
+        url: `${baseUrl}/calculators/${calc.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+    }));
+
     // Dynamic city pages for all 10 cities
     const cityPages: MetadataRoute.Sitemap = CITIES.map((city) => ({
         url: `${baseUrl}/cities/${city}`,
@@ -95,5 +99,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }));
 
-    return [...staticPages, ...cityPages];
+    // Blog post pages
+    const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.updatedAt),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+    }));
+
+    return [...staticPages, ...calculatorPages, ...cityPages, ...blogPages];
 }
