@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BLOG_POSTS } from '@/lib/blogData';
+import { createServerClient } from '@/lib/supabase-server';
+import type { Article } from '@/lib/database.types';
 import { Calendar, Clock, ArrowRight, BookOpen, Tag } from 'lucide-react';
+
+// Revalidate every hour for ISR
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
     title: 'Gold Investment Blog - Expert Tips & Guides | GoldRate24',
@@ -40,11 +44,49 @@ const categoryColors: Record<string, string> = {
     Education: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
     Tips: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     Finance: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    News: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    Guide: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
 };
 
-export default function BlogPage() {
-    const featuredPost = BLOG_POSTS[0];
-    const otherPosts = BLOG_POSTS.slice(1);
+async function getArticles(): Promise<Article[]> {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+        .from('articles')
+        .select('*, category:categories(name, slug, color)')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+
+    if (error || !data) {
+        // Fallback to hardcoded data if Supabase fails
+        const { BLOG_POSTS } = await import('@/lib/blogData');
+        return BLOG_POSTS.map((post) => ({
+            id: post.slug,
+            slug: post.slug,
+            title: post.title,
+            description: post.description,
+            content: post.content,
+            author: post.author,
+            category_id: null,
+            tags: post.tags,
+            keywords: post.keywords,
+            read_time: post.readTime,
+            featured_image: post.image,
+            is_published: true,
+            is_featured: false,
+            published_at: post.publishedAt,
+            created_at: post.publishedAt,
+            updated_at: post.updatedAt,
+            category: { id: '', name: post.category, slug: post.category.toLowerCase(), color: 'amber', created_at: '' },
+        }));
+    }
+
+    return data;
+}
+
+export default async function BlogPage() {
+    const articles = await getArticles();
+    const featuredPost = articles.find((a) => a.is_featured) || articles[0];
+    const otherPosts = articles.filter((a) => a.id !== featuredPost?.id);
 
     return (
         <div className="min-h-screen">
@@ -63,14 +105,15 @@ export default function BlogPage() {
                             name: 'GoldRate24',
                             url: 'https://goldrate24.in',
                         },
-                        blogPost: BLOG_POSTS.map((post) => ({
+                        blogPost: articles.map((post) => ({
                             '@type': 'BlogPosting',
                             headline: post.title,
                             description: post.description,
-                            datePublished: post.publishedAt,
-                            dateModified: post.updatedAt,
+                            datePublished: post.published_at || post.created_at,
+                            dateModified: post.updated_at,
                             author: { '@type': 'Organization', name: post.author },
                             url: `https://goldrate24.in/blog/${post.slug}`,
+                            ...(post.featured_image ? { image: post.featured_image } : {}),
                         })),
                     }),
                 }}
@@ -96,50 +139,63 @@ export default function BlogPage() {
             </section>
 
             {/* Featured Post */}
-            <section className="section">
-                <div className="container-custom">
-                    <div className="max-w-6xl mx-auto">
-                        <Link href={`/blog/${featuredPost.slug}`} className="group block">
-                            <div className="card p-8 md:p-12 hover:shadow-xl transition-all duration-300 border-2 border-amber-200 dark:border-amber-800 relative overflow-hidden">
-                                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-bold rounded-full">
-                                    FEATURED
-                                </div>
-                                <div className="flex flex-col md:flex-row gap-6 md:gap-10">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryColors[featuredPost.category] || 'bg-gray-100 text-gray-700'}`}>
-                                                {featuredPost.category}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-xs text-text-secondary">
-                                                <Clock className="w-3 h-3" />
-                                                {featuredPost.readTime}
-                                            </span>
+            {featuredPost && (
+                <section className="section">
+                    <div className="container-custom">
+                        <div className="max-w-6xl mx-auto">
+                            <Link href={`/blog/${featuredPost.slug}`} className="group block">
+                                <div className="card p-8 md:p-12 hover:shadow-xl transition-all duration-300 border-2 border-amber-200 dark:border-amber-800 relative overflow-hidden">
+                                    <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-bold rounded-full">
+                                        FEATURED
+                                    </div>
+                                    <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+                                        {/* Featured Image */}
+                                        {featuredPost.featured_image && featuredPost.featured_image !== '/og-image.png' && (
+                                            <div className="md:w-72 lg:w-96 flex-shrink-0">
+                                                <img
+                                                    src={featuredPost.featured_image}
+                                                    alt={featuredPost.title}
+                                                    className="w-full h-48 md:h-full object-cover rounded-xl"
+                                                    loading="eager"
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryColors[(featuredPost.category as any)?.name] || 'bg-gray-100 text-gray-700'}`}>
+                                                    {(featuredPost.category as any)?.name || 'General'}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-xs text-text-secondary">
+                                                    <Clock className="w-3 h-3" />
+                                                    {featuredPost.read_time}
+                                                </span>
+                                            </div>
+                                            <h2 className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                                {featuredPost.title}
+                                            </h2>
+                                            <p className="text-text-secondary mb-6 text-lg">
+                                                {featuredPost.description}
+                                            </p>
+                                            <div className="flex items-center gap-4 text-sm text-text-secondary">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-4 h-4" />
+                                                    {new Date(featuredPost.published_at || featuredPost.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                                </span>
+                                                <span>By {featuredPost.author}</span>
+                                            </div>
                                         </div>
-                                        <h2 className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                                            {featuredPost.title}
-                                        </h2>
-                                        <p className="text-text-secondary mb-6 text-lg">
-                                            {featuredPost.description}
-                                        </p>
-                                        <div className="flex items-center gap-4 text-sm text-text-secondary">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="w-4 h-4" />
-                                                {new Date(featuredPost.publishedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                            </span>
-                                            <span>By {featuredPost.author}</span>
+                                        <div className="flex items-center">
+                                            <div className="p-4 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+                                                <ArrowRight className="w-6 h-6 text-amber-600 dark:text-amber-400 transform group-hover:translate-x-1 transition-transform" />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center">
-                                        <div className="p-4 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
-                                            <ArrowRight className="w-6 h-6 text-amber-600 dark:text-amber-400 transform group-hover:translate-x-1 transition-transform" />
-                                        </div>
-                                    </div>
                                 </div>
-                            </div>
-                        </Link>
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* All Posts Grid */}
             <section className="section bg-surface">
@@ -151,34 +207,45 @@ export default function BlogPage() {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {otherPosts.map((post) => (
                                 <Link
-                                    key={post.slug}
+                                    key={post.id}
                                     href={`/blog/${post.slug}`}
                                     className="group"
                                 >
-                                    <article className="card-hover p-6 h-full flex flex-col">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryColors[post.category] || 'bg-gray-100 text-gray-700'}`}>
-                                                {post.category}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-xs text-text-secondary">
-                                                <Clock className="w-3 h-3" />
-                                                {post.readTime}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-lg font-bold mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">
-                                            {post.title}
-                                        </h3>
-                                        <p className="text-sm text-text-secondary mb-4 flex-1 line-clamp-3">
-                                            {post.description}
-                                        </p>
-                                        <div className="flex items-center justify-between text-xs text-text-secondary pt-4 border-t border-border">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" />
-                                                {new Date(post.publishedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium group-hover:gap-2 transition-all">
-                                                Read More <ArrowRight className="w-3 h-3" />
-                                            </span>
+                                    <article className="card-hover h-full flex flex-col overflow-hidden">
+                                        {/* Article Image */}
+                                        {post.featured_image && post.featured_image !== '/og-image.png' && (
+                                            <img
+                                                src={post.featured_image}
+                                                alt={post.title}
+                                                className="w-full h-48 object-cover"
+                                                loading="lazy"
+                                            />
+                                        )}
+                                        <div className="p-6 flex flex-col flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${categoryColors[(post.category as any)?.name] || 'bg-gray-100 text-gray-700'}`}>
+                                                    {(post.category as any)?.name || 'General'}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-xs text-text-secondary">
+                                                    <Clock className="w-3 h-3" />
+                                                    {post.read_time}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-lg font-bold mb-3 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">
+                                                {post.title}
+                                            </h3>
+                                            <p className="text-sm text-text-secondary mb-4 flex-1 line-clamp-3">
+                                                {post.description}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs text-text-secondary pt-4 border-t border-border">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(post.published_at || post.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium group-hover:gap-2 transition-all">
+                                                    Read More <ArrowRight className="w-3 h-3" />
+                                                </span>
+                                            </div>
                                         </div>
                                     </article>
                                 </Link>

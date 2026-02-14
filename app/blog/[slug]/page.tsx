@@ -1,54 +1,168 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { BLOG_POSTS, getBlogPost } from '@/lib/blogData';
+import { createServerClient } from '@/lib/supabase-server';
+import type { Article, ArticleImage } from '@/lib/database.types';
 import { Calendar, Clock, ArrowLeft, ArrowRight, Tag, ChevronRight } from 'lucide-react';
+
+// Revalidate every hour
+export const revalidate = 3600;
 
 interface Props {
     params: { slug: string };
 }
 
-export async function generateStaticParams() {
-    return BLOG_POSTS.map((post) => ({
-        slug: post.slug,
-    }));
+async function getArticle(slug: string): Promise<{ article: Article; images: ArticleImage[] } | null> {
+    const supabase = createServerClient();
+
+    const { data: article } = await supabase
+        .from('articles')
+        .select('*, category:categories(name, slug, color)')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
+
+    if (!article) {
+        // Fallback to hardcoded data
+        const { getBlogPost } = await import('@/lib/blogData');
+        const post = getBlogPost(slug);
+        if (!post) return null;
+
+        return {
+            article: {
+                id: post.slug,
+                slug: post.slug,
+                title: post.title,
+                description: post.description,
+                content: post.content,
+                author: post.author,
+                category_id: null,
+                tags: post.tags,
+                keywords: post.keywords,
+                read_time: post.readTime,
+                featured_image: post.image,
+                is_published: true,
+                is_featured: false,
+                published_at: post.publishedAt,
+                created_at: post.publishedAt,
+                updated_at: post.updatedAt,
+                category: { id: '', name: post.category, slug: post.category.toLowerCase(), color: 'amber', created_at: '' },
+            },
+            images: [],
+        };
+    }
+
+    const { data: images } = await supabase
+        .from('article_images')
+        .select('*')
+        .eq('article_id', article.id)
+        .order('sort_order');
+
+    return { article, images: images || [] };
+}
+
+async function getRelatedArticles(currentSlug: string): Promise<Article[]> {
+    const supabase = createServerClient();
+    const { data } = await supabase
+        .from('articles')
+        .select('*, category:categories(name, slug, color)')
+        .eq('is_published', true)
+        .neq('slug', currentSlug)
+        .order('published_at', { ascending: false })
+        .limit(3);
+
+    if (!data || data.length === 0) {
+        const { BLOG_POSTS } = await import('@/lib/blogData');
+        return BLOG_POSTS
+            .filter((p) => p.slug !== currentSlug)
+            .slice(0, 3)
+            .map((post) => ({
+                id: post.slug,
+                slug: post.slug,
+                title: post.title,
+                description: post.description,
+                content: '',
+                author: post.author,
+                category_id: null,
+                tags: post.tags,
+                keywords: post.keywords,
+                read_time: post.readTime,
+                featured_image: post.image,
+                is_published: true,
+                is_featured: false,
+                published_at: post.publishedAt,
+                created_at: post.publishedAt,
+                updated_at: post.updatedAt,
+                category: { id: '', name: post.category, slug: post.category.toLowerCase(), color: 'amber', created_at: '' },
+            }));
+    }
+
+    return data;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const post = getBlogPost(params.slug);
-    if (!post) return { title: 'Post Not Found' };
+    const result = await getArticle(params.slug);
+    if (!result) return { title: 'Post Not Found' };
+
+    const { article, images } = result;
+    const ogImage = article.featured_image || '/og-image.png';
 
     return {
-        title: `${post.title} | GoldRate24 Blog`,
-        description: post.description,
-        keywords: post.keywords,
-        authors: [{ name: post.author }],
+        title: `${article.title} | GoldRate24 Blog`,
+        description: article.description,
+        keywords: article.keywords,
+        authors: [{ name: article.author }],
         openGraph: {
-            title: post.title,
-            description: post.description,
+            title: article.title,
+            description: article.description,
             type: 'article',
-            publishedTime: post.publishedAt,
-            modifiedTime: post.updatedAt,
-            authors: [post.author],
-            tags: post.tags,
-            url: `/blog/${post.slug}`,
+            publishedTime: article.published_at || article.created_at,
+            modifiedTime: article.updated_at,
+            authors: [article.author],
+            tags: article.tags,
+            url: `/blog/${article.slug}`,
             siteName: 'GoldRate24',
-            images: [{ url: post.image, width: 1200, height: 630 }],
+            images: [
+                { url: ogImage, width: 1200, height: 630 },
+                ...images.map((img) => ({ url: img.url, width: img.width || 800, height: img.height || 600, alt: img.alt_text })),
+            ],
         },
         twitter: {
             card: 'summary_large_image',
-            title: post.title,
-            description: post.description,
+            title: article.title,
+            description: article.description,
+            images: [ogImage],
         },
         alternates: {
-            canonical: `/blog/${post.slug}`,
+            canonical: `/blog/${article.slug}`,
         },
         robots: { index: true, follow: true },
     };
 }
 
-function MarkdownContent({ content }: { content: string }) {
-    // Simple markdown-to-HTML renderer for blog content
+// Inline image component for articles
+function ArticleInlineImage({ image }: { image: ArticleImage }) {
+    return (
+        <figure className="my-8">
+            <img
+                src={image.url}
+                alt={image.alt_text || ''}
+                width={image.width || undefined}
+                height={image.height || undefined}
+                loading="lazy"
+                className="w-full rounded-xl border border-border"
+            />
+            {image.caption && (
+                <figcaption className="text-center text-sm text-text-secondary mt-3 italic">
+                    {image.caption}
+                </figcaption>
+            )}
+        </figure>
+    );
+}
+
+function MarkdownContent({ content, images }: { content: string; images: ArticleImage[] }) {
     const lines = content.trim().split('\n');
     const elements: JSX.Element[] = [];
     let inTable = false;
@@ -125,22 +239,16 @@ function MarkdownContent({ content }: { content: string }) {
     };
 
     function formatInlineText(text: string): React.ReactNode {
-        // Handle bold, links, italics, inline code
         const parts: React.ReactNode[] = [];
         let remaining = text;
         let key = 0;
 
         while (remaining.length > 0) {
-            // Links [text](url)
             const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
-            // Bold **text**
             const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
-            // Italic *text*
             const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/);
-            // Inline code `text`
             const codeMatch = remaining.match(/`([^`]+)`/);
 
-            // Find earliest match
             const matches = [
                 linkMatch ? { type: 'link', match: linkMatch, index: linkMatch.index! } : null,
                 boldMatch ? { type: 'bold', match: boldMatch, index: boldMatch.index! } : null,
@@ -192,14 +300,25 @@ function MarkdownContent({ content }: { content: string }) {
         const line = lines[i];
         const trimmed = line.trim();
 
-        // Skip empty lines but flush lists/blockquotes
+        // Check for inline image placeholder {{image:N}}
+        const imageMatch = trimmed.match(/^\{\{image:(\d+)\}\}$/);
+        if (imageMatch) {
+            if (inList) flushList();
+            if (inBlockquote) flushBlockquote();
+            if (inTable) flushTable();
+            const imgIndex = parseInt(imageMatch[1]);
+            if (images[imgIndex]) {
+                elements.push(<ArticleInlineImage key={`img-${i}`} image={images[imgIndex]} />);
+            }
+            continue;
+        }
+
         if (trimmed === '') {
             if (inList) flushList();
             if (inBlockquote) flushBlockquote();
             continue;
         }
 
-        // Skip code blocks
         if (trimmed.startsWith('```')) {
             if (inCodeBlock) {
                 inCodeBlock = false;
@@ -210,17 +329,12 @@ function MarkdownContent({ content }: { content: string }) {
         }
         if (inCodeBlock) continue;
 
-        // Tables
         if (trimmed.startsWith('|')) {
-            if (!inList && inList) flushList();
             if (inBlockquote) flushBlockquote();
-
             const cells = trimmed.split('|').filter((c: string) => c.trim() !== '');
-
             if (trimmed.match(/^\|[\s-:|]+\|$/)) {
-                continue; // separator row
+                continue;
             }
-
             if (!inTable) {
                 inTable = true;
                 tableHeaders = cells;
@@ -232,7 +346,6 @@ function MarkdownContent({ content }: { content: string }) {
             flushTable();
         }
 
-        // Blockquotes
         if (trimmed.startsWith('>')) {
             if (inList) flushList();
             inBlockquote = true;
@@ -242,27 +355,29 @@ function MarkdownContent({ content }: { content: string }) {
             flushBlockquote();
         }
 
-        // Headers
         if (trimmed.startsWith('## ')) {
             if (inList) flushList();
+            const text = trimmed.replace('## ', '');
+            const id = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
             elements.push(
-                <h2 key={`h2-${i}`} className="text-2xl md:text-3xl font-bold mt-10 mb-4 text-text-primary">
-                    {trimmed.replace('## ', '')}
+                <h2 key={`h2-${i}`} id={id} className="text-2xl md:text-3xl font-bold mt-10 mb-4 text-text-primary scroll-mt-20">
+                    {text}
                 </h2>
             );
             continue;
         }
         if (trimmed.startsWith('### ')) {
             if (inList) flushList();
+            const text = trimmed.replace('### ', '');
+            const id = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
             elements.push(
-                <h3 key={`h3-${i}`} className="text-xl md:text-2xl font-bold mt-8 mb-3 text-text-primary">
-                    {trimmed.replace('### ', '')}
+                <h3 key={`h3-${i}`} id={id} className="text-xl md:text-2xl font-bold mt-8 mb-3 text-text-primary scroll-mt-20">
+                    {text}
                 </h3>
             );
             continue;
         }
 
-        // Lists
         if (trimmed.match(/^[-*]\s/) || trimmed.match(/^\d+\.\s/)) {
             if (!inList) {
                 inList = true;
@@ -274,7 +389,6 @@ function MarkdownContent({ content }: { content: string }) {
             flushList();
         }
 
-        // Regular paragraphs
         elements.push(
             <p key={`p-${i}`} className="my-4 text-text-secondary leading-relaxed text-lg">
                 {formatInlineText(trimmed)}
@@ -282,7 +396,6 @@ function MarkdownContent({ content }: { content: string }) {
         );
     }
 
-    // Flush remaining
     if (inTable) flushTable();
     if (inList) flushList();
     if (inBlockquote) flushBlockquote();
@@ -290,15 +403,22 @@ function MarkdownContent({ content }: { content: string }) {
     return <>{elements}</>;
 }
 
-export default function BlogPostPage({ params }: Props) {
-    const post = getBlogPost(params.slug);
-    if (!post) notFound();
+export default async function BlogPostPage({ params }: Props) {
+    const result = await getArticle(params.slug);
+    if (!result) notFound();
 
-    const relatedPosts = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+    const { article: post, images } = result;
+    const relatedPosts = await getRelatedArticles(params.slug);
+
+    // Build image URLs array for JSON-LD
+    const allImageUrls = [
+        post.featured_image,
+        ...images.map((img) => img.url),
+    ].filter(Boolean);
 
     return (
         <div className="min-h-screen">
-            {/* JSON-LD */}
+            {/* JSON-LD with image structured data */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -308,8 +428,8 @@ export default function BlogPostPage({ params }: Props) {
                             '@type': 'BlogPosting',
                             headline: post.title,
                             description: post.description,
-                            datePublished: post.publishedAt,
-                            dateModified: post.updatedAt,
+                            datePublished: post.published_at || post.created_at,
+                            dateModified: post.updated_at,
                             author: { '@type': 'Organization', name: post.author },
                             publisher: {
                                 '@type': 'Organization',
@@ -319,6 +439,7 @@ export default function BlogPostPage({ params }: Props) {
                             },
                             mainEntityOfPage: `https://goldrate24.in/blog/${post.slug}`,
                             keywords: post.keywords.join(', '),
+                            image: allImageUrls,
                         },
                         {
                             '@context': 'https://schema.org',
@@ -329,6 +450,16 @@ export default function BlogPostPage({ params }: Props) {
                                 { '@type': 'ListItem', position: 3, name: post.title, item: `https://goldrate24.in/blog/${post.slug}` },
                             ],
                         },
+                        // ImageObject structured data for each article image
+                        ...images.map((img) => ({
+                            '@context': 'https://schema.org',
+                            '@type': 'ImageObject',
+                            url: img.url,
+                            name: img.alt_text || post.title,
+                            caption: img.caption || img.alt_text || post.title,
+                            ...(img.width ? { width: img.width } : {}),
+                            ...(img.height ? { height: img.height } : {}),
+                        })),
                     ]),
                 }}
             />
@@ -357,11 +488,11 @@ export default function BlogPostPage({ params }: Props) {
 
                         <div className="flex items-center gap-3 mb-4">
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                                {post.category}
+                                {(post.category as any)?.name || 'General'}
                             </span>
                             <span className="flex items-center gap-1 text-sm text-text-secondary">
                                 <Clock className="w-4 h-4" />
-                                {post.readTime}
+                                {post.read_time}
                             </span>
                         </div>
 
@@ -376,13 +507,25 @@ export default function BlogPostPage({ params }: Props) {
                         <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary pb-6 border-b border-border">
                             <span className="flex items-center gap-1.5">
                                 <Calendar className="w-4 h-4" />
-                                Published {new Date(post.publishedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                Published {new Date(post.published_at || post.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </span>
                             <span className="hidden sm:inline">•</span>
-                            <span>Updated {new Date(post.updatedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            <span>Updated {new Date(post.updated_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             <span className="hidden sm:inline">•</span>
                             <span>By {post.author}</span>
                         </div>
+
+                        {/* Featured Image */}
+                        {post.featured_image && post.featured_image !== '/og-image.png' && (
+                            <div className="mt-8">
+                                <img
+                                    src={post.featured_image}
+                                    alt={post.title}
+                                    className="w-full rounded-2xl border border-border"
+                                    loading="eager"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
@@ -392,7 +535,7 @@ export default function BlogPostPage({ params }: Props) {
                 <div className="container-custom">
                     <div className="max-w-4xl mx-auto">
                         <article className="prose prose-lg max-w-none">
-                            <MarkdownContent content={post.content} />
+                            <MarkdownContent content={post.content} images={images} />
                         </article>
 
                         {/* Tags */}
@@ -421,19 +564,29 @@ export default function BlogPostPage({ params }: Props) {
                         <div className="grid md:grid-cols-3 gap-6">
                             {relatedPosts.map((related) => (
                                 <Link key={related.slug} href={`/blog/${related.slug}`} className="group">
-                                    <article className="card-hover p-6 h-full flex flex-col">
-                                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-2">
-                                            {related.category}
-                                        </span>
-                                        <h3 className="font-bold mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">
-                                            {related.title}
-                                        </h3>
-                                        <p className="text-sm text-text-secondary line-clamp-2 flex-1">
-                                            {related.description}
-                                        </p>
-                                        <span className="mt-4 text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
-                                            Read More <ArrowRight className="w-3 h-3" />
-                                        </span>
+                                    <article className="card-hover h-full flex flex-col overflow-hidden">
+                                        {related.featured_image && related.featured_image !== '/og-image.png' && (
+                                            <img
+                                                src={related.featured_image}
+                                                alt={related.title}
+                                                className="w-full h-40 object-cover"
+                                                loading="lazy"
+                                            />
+                                        )}
+                                        <div className="p-6 flex flex-col flex-1">
+                                            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-2">
+                                                {(related.category as any)?.name || 'General'}
+                                            </span>
+                                            <h3 className="font-bold mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">
+                                                {related.title}
+                                            </h3>
+                                            <p className="text-sm text-text-secondary line-clamp-2 flex-1">
+                                                {related.description}
+                                            </p>
+                                            <span className="mt-4 text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                                                Read More <ArrowRight className="w-3 h-3" />
+                                            </span>
+                                        </div>
                                     </article>
                                 </Link>
                             ))}
