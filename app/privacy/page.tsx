@@ -32,7 +32,7 @@ export default function PrivacyPage() {
                             Privacy <span className="text-gradient-gold">Policy</span>
                         </h1>
                         <p className="text-lg text-text-secondary">
-                            Last updated: December 25, 2024
+                            Last updated: February 20, 2026
                         </p>
                     </div>
                 </div>
@@ -145,13 +145,6 @@ export default function PrivacyPage() {
                                 <li>Website: goldrate24.in/contact</li>
                             </ul>
 
-                            <div className="mt-8 p-6 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                                <p className="text-sm text-amber-800 dark:text-amber-200 mb-0">
-                                    <strong>Note:</strong> This privacy policy is provided as a template. Please consult with
-                                    a legal professional to ensure it meets all applicable laws and regulations for your
-                                    specific jurisdiction and business needs.
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>

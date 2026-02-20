@@ -1,4 +1,4 @@
-export interface BlogPost {
+                                                                                                                                                                                                                                                                                                            export interface BlogPost {
     slug: string;
     title: string;
     description: string;
@@ -25,7 +25,7 @@ export const BLOG_POSTS: BlogPost[] = [
         category: 'Investment',
         tags: ['gold investment', 'beginners guide', 'india'],
         keywords: ['gold investment india', 'how to invest in gold', 'gold investment for beginners', 'best way to invest in gold india', 'gold investment options india 2026'],
-        image: '/og-image.png',
+        image: '/blog-gold-investment-guide.png',
         content: `
 ## Why Invest in Gold?
 
@@ -185,7 +185,7 @@ Gold remains one of the most reliable investment options in India. Whether you c
         category: 'Education',
         tags: ['24k gold', '22k gold', 'gold purity', 'jewelry'],
         keywords: ['24k vs 22k gold', '24 karat gold', '22 karat gold', 'gold purity difference', 'which gold is better for investment', '24k gold price vs 22k'],
-        image: '/og-image.png',
+        image: '/blog-24k-vs-22k-gold.png',
         content: `
 ## Understanding Gold Purity
 
@@ -314,7 +314,7 @@ For budget-conscious buyers or those who prefer studded jewelry (with diamonds o
         category: 'Investment',
         tags: ['gold vs mutual funds', 'investment comparison', 'india'],
         keywords: ['gold vs mutual funds', 'gold investment vs sip', 'gold or mutual fund which is better', 'gold vs equity mutual funds india', 'gold vs sip returns'],
-        image: '/og-image.png',
+        image: '/blog-gold-vs-mutual-funds.png',
         content: `
 ## The Eternal Debate: Gold vs Mutual Funds
 
@@ -449,7 +449,7 @@ Neither gold nor mutual funds is universally "better." Gold provides stability, 
         category: 'Tips',
         tags: ['best time to buy gold', 'gold price trends', 'seasonal patterns'],
         keywords: ['best time to buy gold in india', 'cheapest month to buy gold', 'gold price monthly trend', 'best day to buy gold', 'akshaya tritiya gold'],
-        image: '/og-image.png',
+        image: '/blog-best-time-buy-gold.png',
         content: `
 ## Does Timing Matter When Buying Gold?
 
@@ -594,7 +594,7 @@ The best time to buy gold is when it fits your financial plan. While seasonal pa
         category: 'Investment',
         tags: ['digital gold', 'physical gold', 'gold investment'],
         keywords: ['digital gold vs physical gold', 'digital gold india', 'is digital gold safe', 'digital gold investment', 'paytm digital gold', 'phonepe gold'],
-        image: '/og-image.png',
+        image: '/blog-digital-gold-vs-physical.png',
         content: `
 ## The Rise of Digital Gold in India
 
@@ -744,7 +744,7 @@ Digital gold is a convenient, accessible way to buy pure gold, especially for sm
         category: 'Education',
         tags: ['gold price factors', 'gold rate changes', 'india gold market'],
         keywords: ['why gold rate changes daily', 'factors affecting gold price', 'gold rate factors india', 'why gold price increases', 'what affects gold price in india'],
-        image: '/og-image.png',
+        image: '/blog-gold-price-factors.png',
         content: `
 ## Why Do Gold Rates Change Every Day?
 
@@ -915,7 +915,7 @@ Gold prices are influenced by a complex combination of global and local factors.
         category: 'Tips',
         tags: ['gold jewelry', 'making charges', 'GST', 'buying guide'],
         keywords: ['gold making charges', 'gold jewelry making charges india', 'gold wastage charges', 'gold GST calculation', 'gold jewelry buying tips', 'BIS hallmark gold'],
-        image: '/og-image.png',
+        image: '/blog-gold-jewelry-buying-guide.png',
         content: `
 ## Why Gold Jewelry Costs More Than Gold Rate
 
@@ -1108,7 +1108,7 @@ Knowledge is your best tool when buying gold jewelry. Understanding making charg
         category: 'Finance',
         tags: ['gold loan', 'gold loan interest rate', 'banks', 'india'],
         keywords: ['gold loan interest rate', 'gold loan india', 'gold loan sbi', 'gold loan eligibility', 'gold loan calculator', 'best gold loan rate', 'muthoot gold loan'],
-        image: '/og-image.png',
+        image: '/blog-gold-loan-guide.png',
         content: `
 ## What is a Gold Loan?
 
@@ -1307,7 +1307,7 @@ Gold loans are one of India's most convenient and affordable credit options. The
         category: 'Investment',
         tags: ['gold vs silver', 'silver investment', 'precious metals', 'india'],
         keywords: ['gold vs silver investment', 'gold vs silver 2026', 'silver investment india', 'gold or silver which is better', 'silver price india', 'precious metals investment india'],
-        image: '/og-image.png',
+        image: '/blog-gold-vs-silver.png',
         content: `
 ## The Gold vs Silver Debate in 2026
 

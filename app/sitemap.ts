@@ -115,6 +115,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'monthly',
             priority: 0.3,
         },
+        {
+            url: `${baseUrl}/faq`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+        },
+        {
+            url: `${baseUrl}/disclaimer`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.4,
+        },
     ];
 
     // Dynamic calculator pages from registry

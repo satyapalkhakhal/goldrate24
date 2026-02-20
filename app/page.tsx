@@ -6,6 +6,7 @@ import CityRates from '@/components/home/CityRates';
 import BusinessNews from '@/components/home/BusinessNews';
 import TrustIndicators from '@/components/home/TrustIndicators';
 import StructuredData from '@/components/seo/StructuredData';
+import InternationalPricesTicker from '@/components/home/InternationalPricesTicker';
 
 export default function HomePage() {
     return (
@@ -28,6 +29,7 @@ export default function HomePage() {
                 }}
             />
             <GoldRatesDashboard />
+            <InternationalPricesTicker />
             <GoldRateHistory />
             <QuickCalculator />
             <Features />
@@ -37,3 +39,4 @@ export default function HomePage() {
         </>
     );
 }
+
