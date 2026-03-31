@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Try to fetch dynamic articles and CMS pages from Supabase
     let dynamicBlogPages: MetadataRoute.Sitemap = [];
     let dynamicCmsPages: MetadataRoute.Sitemap = [];
+    let businessNewsPages: MetadataRoute.Sitemap = [];
 
     try {
         const { createServerClient } = await import('@/lib/supabase-server');
@@ -53,6 +54,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         // Fallback silently — use hardcoded data below
     }
 
+    // Fetch business news articles from ThinkScope Supabase
+    try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rfuumgvtjfvxmhocxhfk.supabase.co';
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmdXVtZ3Z0amZ2eG1ob2N4aGZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzU4OTIsImV4cCI6MjA4ODcxMTg5Mn0.9CCpMxp_Kyzsw8Y2wxk6CAL8ZPbhA7vpWqNlOJPXn20';
+
+        const response = await fetch(
+            `${supabaseUrl}/rest/v1/articles?select=slug,created_at&category=eq.BUSINESS&order=published_at.desc`,
+            {
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Accept': 'application/json',
+                },
+                next: { revalidate: 3600 },
+            }
+        );
+
+        if (response.ok) {
+            const businessArticles = await response.json();
+            businessNewsPages = businessArticles.map((a: { slug: string; created_at: string }) => ({
+                url: `${baseUrl}/business-news/${a.slug}`,
+                lastModified: new Date(a.created_at),
+                changeFrequency: 'weekly' as const,
+                priority: 0.7,
+            }));
+        }
+    } catch (err) {
+        // Fallback silently
+    }
+
     // Static pages
     const staticPages: MetadataRoute.Sitemap = [
         {
@@ -75,6 +106,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         {
             url: `${baseUrl}/cities`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/business-news`,
             lastModified: new Date(),
             changeFrequency: 'daily',
             priority: 0.8,
@@ -115,18 +152,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'monthly',
             priority: 0.3,
         },
-        {
-            url: `${baseUrl}/faq`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${baseUrl}/disclaimer`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.4,
-        },
     ];
 
     // Dynamic calculator pages from registry
@@ -161,5 +186,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...cityPages,
         ...(dynamicBlogPages.length > 0 ? dynamicBlogPages : fallbackBlogPages),
         ...dynamicCmsPages,
+        ...businessNewsPages,
     ];
 }
